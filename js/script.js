@@ -48,6 +48,11 @@ async function displayGameDetails() {
   const gameID = window.location.search.split("=")[1];
   //console.log(gameID);
   const game = await FetchApiData(`games/${gameID}?`);
+
+  //overlay for bg image
+  displayBackgroundImg(game.background_image_additional);
+
+
   const div = document.createElement("div");
   div.innerHTML = `
     <div class="details-top">
@@ -104,6 +109,30 @@ async function displayGameDetails() {
     `;
   document.querySelector("#movie-details").appendChild(div);
 }
+
+
+
+function displayBackgroundImg(bgPath) {
+    const overlayDiv = document.createElement('div');
+    overlayDiv.style.backgroundImage = `url(${bgPath})`;
+    overlayDiv.style.backgroundSize = 'cover'; // Ensures the image covers the entire screen
+    overlayDiv.style.backgroundPosition = 'center'; // Centers the image within the div
+    overlayDiv.style.backgroundRepeat = 'no-repeat'; // Prevents image repetition
+    overlayDiv.style.height = '100vh'; // Full viewport height
+    overlayDiv.style.width = '100vw'; // Full viewport width
+    overlayDiv.style.position = 'fixed'; // Ensures the background stays in place when scrolling
+    overlayDiv.style.top = '0';
+    overlayDiv.style.left = '0';
+    overlayDiv.style.zIndex = '-1'; // Keeps the background behind other elements
+    overlayDiv.style.opacity = '0.4'; // Optional: to dim the background image if needed
+
+    // Append the overlayDiv to the body or a specific element with the id "movie-details"
+    document.body.appendChild(overlayDiv); // Using body ensures it covers the full viewport, even if the #movie-details element is smaller
+}
+
+
+
+
 // Fetch Data
 async function FetchApiData(endpoint) {
   const API_KEY = "fa4e01657e0c492a9f8221ff86c3a63f";
