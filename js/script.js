@@ -131,6 +131,61 @@ function displayBackgroundImg(bgPath) {
 }
 
 
+//Display slider 
+async function displaySlider(){
+    const currentYear = new Date().getFullYear();
+    const dateRange = `${currentYear}-01-01,${currentYear}-12-31`
+
+    const {results} = await FetchApiData(`games?ordering=-rating&dates=${dateRange}`);
+    
+    results.forEach((game)=>{
+        const div = document.createElement('div');
+        div.classList.add('swiper-slide');
+
+        div.innerHTML = `
+        <a href="movie-details.html?id=${game.id}">
+              <img src="${
+                          game.background_image ||
+                          "images/no_selection_699e871f-fd70-4a0f-afd5-2d2c980f24ed.webp"
+                        }" />
+            </a>
+            <h4 class="swiper-rating">
+              ${game.name} <i class="fas fa-star text-secondary"></i> ${game.rating}
+            </h4>
+        `;
+
+        document.querySelector('.swiper-wrapper').appendChild(div);
+
+        initSwiper();
+    })
+    
+}
+
+function initSwiper(){
+    const swiper = new Swiper('.swiper',{
+        slidesPerView: 1,
+        spaceBetween: 30,
+        freeMode: true,
+        loop: true,
+        autoplay: {
+            delay:4000,
+            disableOnInteraction: false
+        },
+        breakpoints:{
+            500:{
+                slidesPerView: 2
+            },
+            700:{
+                slidesPerView: 3
+            },
+            1200:{
+                slidesPerView: 4
+            },
+        }
+    })
+}
+
+
 
 
 // Fetch Data
@@ -158,6 +213,7 @@ function init() {
     case "/":
     case "/index.html":
       displayPopularGames();
+      displaySlider();
       console.log("Home");
       break;
     case "/movie-details.html":
