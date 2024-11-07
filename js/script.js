@@ -1,5 +1,11 @@
 const global = {
   currentPage: window.location.pathname,
+
+  search:{
+    term:'',
+    page:1,
+    totalPages: 1
+  }
 };
 
 async function displayPopularGames() {
@@ -186,6 +192,75 @@ function initSwiper(){
 }
 
 
+async function search(){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    global.search.term = urlParams.get('search-term')
+
+    if(global.search.term !== '' && global.search.term !== null){
+        const { results }= await searchApiData();
+        
+        if(results.length === 0){
+            showAlert('No results found');
+            return;
+        }
+        
+        displaySearchResults(results);
+        document.querySelector("#search-term").value = '';
+    }
+    else{
+        showAlert('Please enter a search term');
+    }
+}
+
+function showAlert(message, className='error'){
+    const alertEl = document.createElement('div');
+    alertEl.classList.add('alert', className);
+    alertEl.appendChild(document.createTextNode(message));
+    document.querySelector("#alert").appendChild(alertEl);
+
+    setTimeout(()=>{alertEl.remove()}, 3500)
+}
+
+function displaySearchResults(results) {
+    const searchResultsContainer = document.querySelector("#search-results");
+    
+    // Clear previous search results
+    searchResultsContainer.innerHTML = '';
+
+    results.forEach((game) => {
+        if (game) { // Optional: Check if game object exists
+            const div = document.createElement("div");
+            div.classList.add("card");
+
+            div.innerHTML = `
+                <a href="movie-details.html?id=${game.id}">
+                    <img
+                        src="${
+                          game.background_image ||
+                          "images/no_selection_699e871f-fd70-4a0f-afd5-2d2c980f24ed.webp"
+                        }"
+                        class="card-img-top"
+                        alt="${game.name}"
+                    />
+                </a>
+                <div class="card-body">
+                    <h5 class="card-title">${game.name}</h5>
+                    <p class="card-text">
+                        <small class="text-muted">Rating: ${
+                          game.rating || "N/A"
+                        }</small>
+                    </p>
+                </div>
+            `;
+
+            searchResultsContainer.appendChild(div);
+        }
+    });
+}
+
+
 
 
 // Fetch Data
@@ -207,6 +282,26 @@ async function FetchApiData(endpoint) {
   return data;
 }
 
+//Search Data
+async function searchApiData() {
+    const API_KEY = "fa4e01657e0c492a9f8221ff86c3a63f";
+    const API_URL = "https://api.rawg.io/api";
+  
+    showspinner();
+    // Remove any extra slash between `API_URL` and `endpoint`
+    const response = await fetch(`${API_URL}/games?search=${global.search.term}&key=${API_KEY}`);
+  
+    // Check if the response is okay
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  
+    const data = await response.json();
+    hidespinner();
+    return data;
+  }
+
+
 // INIT APP
 function init() {
   switch (global.currentPage) {
@@ -221,6 +316,7 @@ function init() {
       console.log("Movie Details");
       break;
     case "/search.html":
+      search();
       console.log("Search");
       break;
   }
